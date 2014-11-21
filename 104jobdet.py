@@ -47,21 +47,12 @@ for i in data:
 		if len(j)>0:
 			essence += (j+'\n')
 	#cnt+=1
-'''
-'''
+
+title = [ "更新:", "工作:", "待遇:", "地點:", "時段:", "休假:", "上班:", "人數:", "身份:", "學歷:", "學科:", "語文:", "擅長:", "技能:", "其他:", "聯絡人:", "親洽:", "電洽:" ]
+patterns = [ "(?<=更新日期：).*", "(?<=工作內容\n).*", "(?<=工作待遇：\n).*", "(?<=上班地點：\n).*", "(?<=上班時段：\n).*", "(?<=休假制度：\n).*", "(?<=可上班日：\n).*", "(?<=需求人數：\n).*", "(?<=接受身份：\n).*", "(?<=學歷要求：\n).*", "(?<=科系要求：\n).*", "(?<=語文條件：\n).*", "(?<=擅長工具：\n).*", "(?<=工作技能：\n).*", "(?<=其他條件：\n).*", "(?<=聯&nbsp;絡&nbsp;人：\n).*", "(?<=親　　洽：\n).*", "(?<=電　　洽：\n).*"]
 #print essence
-print "更新:" + re.search("(?<=更新日期：).*", essence).group(0)
-print "工作:" + re.search("(?<=工作內容\n).*", essence).group(0)
-print "待遇:" + re.search("(?<=工作待遇：\n).*", essence).group(0)
-print "地點:" + re.search("(?<=上班地點：\n).*", essence).group(0)
-print "時段:" + re.search("(?<=上班時段：\n).*", essence).group(0)
-print "休假:" + re.search("(?<=休假制度：\n).*", essence).group(0)
-print "上班:" + re.search("(?<=可上班日：\n).*", essence).group(0)
-print "人數:" + re.search("(?<=需求人數：\n).*", essence).group(0)
-print "身份:" + re.search("(?<=接受身份：\n).*", essence).group(0)
-print "學歷:" + re.search("(?<=學歷要求：\n).*", essence).group(0)
-print "學科:" + re.search("(?<=科系要求：\n).*", essence).group(0)
-print "語文:" + re.search("(?<=語文條件：\n).*", essence).group(0)
-print "擅長:" + re.search("(?<=擅長工具：\n).*", essence).group(0)
-print "技能:" + re.search("(?<=工作技能：\n).*", essence).group(0)
-print "其他:" + re.search("(?<=其他條件：\n).*", essence).group(0)
+#print patterns
+for i in range(len(title)):
+	match = re.search(patterns[i], essence)
+	if match:
+		print title[i] + match.group(0)
