@@ -23,7 +23,6 @@ def parse104(website):
 	for x in found:
 		# remove html tag, space character, and statements begin with '#'
 		data.append( re.sub("<[^>]*>|[ \t]+|#(?<=#).*","",str(x)) )
-		#data.append(x)
 	return data
 
 
@@ -36,31 +35,56 @@ if len(sys.argv)!=2:
 infile = sys.argv[1]
 htmlfile = getTxtFromFile(infile)
 data = parse104(htmlfile)
-#f = open("replace.txt", "w")
-#f.write(data)
-title = [ "更新:", "工作內容:", "待遇:", "性質:", "地點:", "時段:", "休假:", "上班:", "人數:", "身份:", "經歷:", "學歷:", "學科:", "語文:", "擅長:", "技能:", "其他:", "聯絡人:", "Email:", "親洽:", "電洽:", "其它:" ]
-patterns = [ "(?<=更新日期：)[\d-]+", "(?<=工作內容\n).*", "(?<=工作待遇：\n).*", "(?<=工作性質：\n).*", "(?<=上班地點：\n).*", "(?<=上班時段：\n).*", "(?<=休假制度：\n).*", "(?<=可上班日：\n).*", "(?<=需求人數：\n).*", "(?<=接受身份：\n).*", "(?<=工作經歷：\n).*", "(?<=學歷要求：\n).*", "(?<=科系要求：\n).*", "(?<=語文條件：\n).*", "(?<=擅長工具：\n).*", "(?<=工作技能：\n).*", "(?<=其他條件：\n).*", "(?<=聯&nbsp;絡&nbsp;人：\n).*", "(?<=E-mail：\n).*", "(?<=親　　洽：\n).*", "(?<=電　　洽：\n).*?", "(?<=其　　他：).*"]
+
+# "detail" is a list of [engtitle, zhtitle, repattern, matchedstr]
+detail = [ [ "update", "更新:" , "(?<=更新日期：)[\d-]+" ],
+		[ "content", "工作內容:", "(?<=工作內容\n).*" ],
+		[ "treatment", "工作待遇:", "(?<=工作待遇：\n).*" ],
+		[ "type", "工作性質:", "(?<=工作性質：\n).*" ],
+		[ "location", "上班地點:", "(?<=上班地點：\n).*" ],
+		[ "worktime", "上班時段:", "(?<=上班時段：\n).*" ],
+		[ "leavesys", "休假制度:", "(?<=休假制度：\n).*" ],
+		[ "availability", "可上班日:", "(?<=可上班日：\n).*" ],
+		[ "reqnum", "需求人數:", "(?<=需求人數：\n).*" ],
+		[ "acceptid", "接受身份:", "(?<=接受身份：\n).*" ],
+		[ "exp", "工作經歷:", "(?<=工作經歷：\n).*" ],
+		[ "education", "學歷要求:", "(?<=學歷要求：\n).*" ],
+		[ "department", "科系要求:", "(?<=科系要求：\n).*" ],
+		[ "language", "語文條件:", "(?<=語文條件：\n).*" ],
+		[ "tool", "擅長工具:", "(?<=擅長工具：\n).*" ],
+		[ "skill", "工作技能:", "(?<=工作技能：\n).*" ],
+		[ "othercond", "其他條件:", "(?<=其他條件：\n).*" ],
+		[ "contact", "聯絡人:", "(?<=聯&nbsp;絡&nbsp;人：\n).*" ],
+		[ "emailsrc", "Email:", "(?<=E-mail：\nfun_flash_output\(\")[^\"]+" ],
+		[ "inperson", "親洽:", "(?<=親　　洽：\n).*" ],
+		[ "telesrc", "電洽:", "(?<=電　　洽：).*\n.*" ],
+		[ "other", "其它:", "(?<=其　　他：).*" ]]
 
 essence=""
 for i in data:
 	for j in re.split("\n",i):
-		# delete blank lines
+		# ignore blank lines
 		if len(j)>0:
-			#print "j: " + j
-			'''
-			for k in range(len(title)):
-				m = re.search(patterns[k], j)
-				if m:
-					essence += '\n'
-					break
-					'''
 			essence += (j+"\n")
 
-#print "essence***" + essence + "\nessence***"
-for i in range(len(title)):
-	match = re.search(patterns[i], essence)
-	print title[i],
-	if match:
-		print match.group(0)
+for i in range(len(detail)):
+	if "telesrc" in detail[i][0]:
+		# the telephone numbers src is a link to an image which show tele numbers.
+		teletmp = re.search(detail[i][2], htmlfile)
+		if teletmp:
+			match = re.search("(?<=src=')[^']+", teletmp.group(0))
+	elif "emailsrc" in detail[i][0]:
+		# the email src is a link to a flash called by "fun_flash_output"
+		match = re.search(detail[i][2], essence)
 	else:
-		print 
+		match = re.search(detail[i][2], essence)
+
+	if match:
+		detail[i].append(match.group(0))
+	else:
+		detail[i].append('')
+
+for i in range(len(detail)):
+	for j in [1,3]:
+		print detail[i][j],
+	print
