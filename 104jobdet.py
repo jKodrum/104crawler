@@ -4,6 +4,17 @@ import sys
 import urllib2
 import re
 
+def getDataFromURL( url ):
+    try:
+        response = urllib2.urlopen(urllib2.Request(url))
+    except (ValueError, urllib2.URLError) as e:
+        print e
+        sys.exit(0)
+    data = response.read() 
+    # remove '\r' character
+    data = data.replace('\r', '')
+    return data
+
 def getTxtFromFile( filename ):
     f = open( filename, 'r' )
     data = f.read()
@@ -29,18 +40,20 @@ def parse104(website):
 
 if len(sys.argv)!=2:
     print "agrv Error."
-    print "[usage]: python [inputHtml]"
+    print "[usage]: python [URL]"
     sys.exit(0)
 
-infile = sys.argv[1]
-htmlfile = getTxtFromFile(infile)
+#infile = sys.argv[1]
+URL = sys.argv[1]
+#htmlfile = getTxtFromFile(infile)
+htmlfile = getDataFromURL(URL)
 data = parse104(htmlfile)
 
 # "detail" is a list of [engtitle, zhtitle, repattern, matchedstr]
 detail = [ [ "update", "更新:" , "(?<=更新日期：)[\d-]+" ],
         [ "content", "工作內容:", "(?<=工作內容\n).*" ],
         [ "treatment", "工作待遇:", "(?<=工作待遇：\n).*" ],
-        [ "type", "工作性質:", "(?<=工作性質：\n).*" ],
+        [ "jobtype", "工作性質:", "(?<=工作性質：\n).*" ],
         [ "location", "上班地點:", "(?<=上班地點：\n).*" ],
         [ "worktime", "上班時段:", "(?<=上班時段：\n).*" ],
         [ "leavesys", "休假制度:", "(?<=休假制度：\n).*" ],
@@ -84,7 +97,18 @@ for i in range(len(detail)):
     else:
         detail[i].append('')
 
-for i in range(len(detail)):
+'''
+# dump as .psql file
+print "UPDATE jobs SET",
+for i in range(1,len(detail)):
+    print detail[i][0] + "='" + detail[i][3] + "'",
+    if i < len(detail)-1:
+        print ",",
+print "WHERE joburl='" + URL + "';"
+'''
+
+# columns output
+for i in range(1,len(detail)):
     for j in [1,3]:
         print detail[i][j],
     print

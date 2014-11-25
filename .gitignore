@@ -1,4 +1,6 @@
 *txt
 *.swp
 *.csv
+*.sh
+*.psql
 yahoojob.py
