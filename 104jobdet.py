@@ -43,14 +43,18 @@ if len(sys.argv)!=2:
     print "[usage]: python [URL]"
     sys.exit(0)
 
-#infile = sys.argv[1]
+#arg as a file
+infile = sys.argv[1]
+htmlfile = getTxtFromFile(infile)
+
+#arg as an url
 URL = sys.argv[1]
-#htmlfile = getTxtFromFile(infile)
-htmlfile = getDataFromURL(URL)
+#htmlfile = getDataFromURL(URL)
 data = parse104(htmlfile)
 
 # "detail" is a list of [engtitle, zhtitle, repattern, matchedstr]
 detail = [ [ "update", "更新:" , "(?<=更新日期：)[\d-]+" ],
+        [ "jobname", "志工服務:", "(?<=comp_name\">\s\s\s<h1>)[^<\t]+" ],
         [ "content", "工作內容:", "(?<=工作內容\n).*" ],
         [ "treatment", "工作待遇:", "(?<=工作待遇：\n).*" ],
         [ "jobtype", "工作性質:", "(?<=工作性質：\n).*" ],
@@ -81,7 +85,9 @@ for i in data:
             essence += (j+"\n")
 
 for i in range(len(detail)):
-    if "telesrc" in detail[i][0]:
+    if "jobname" in detail[i][0]:
+        match = re.search(detail[i][2], htmlfile)
+    elif "telesrc" in detail[i][0]:
         # the telephone numbers src is a link to an image which show tele numbers.
         teletmp = re.search(detail[i][2], htmlfile)
         if teletmp:
@@ -112,3 +118,5 @@ for i in range(1,len(detail)):
     for j in [1,3]:
         print detail[i][j],
     print
+'''
+'''
