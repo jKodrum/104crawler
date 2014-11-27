@@ -44,12 +44,12 @@ if len(sys.argv)!=2:
     sys.exit(0)
 
 #arg as a file
-infile = sys.argv[1]
-htmlfile = getTxtFromFile(infile)
+#infile = sys.argv[1]
+#htmlfile = getTxtFromFile(infile)
 
 #arg as an url
 URL = sys.argv[1]
-#htmlfile = getDataFromURL(URL)
+htmlfile = getDataFromURL(URL)
 data = parse104(htmlfile)
 
 # "detail" is a list of [engtitle, zhtitle, repattern, matchedstr]
@@ -92,17 +92,18 @@ for i in range(len(detail)):
         teletmp = re.search(detail[i][2], htmlfile)
         if teletmp:
             match = re.search("(?<=src=')[^']+", teletmp.group(0))
-    elif "emailsrc" in detail[i][0]:
-        # the email src is a link to a flash called by "fun_flash_output"
-        match = re.search(detail[i][2], essence)
     else:
         match = re.search(detail[i][2], essence)
 
     if match:
-        detail[i].append(match.group(0))
+        string = match.group(0)
+        if "location" in detail[i][0]:
+            string = re.sub("地圖","",string)
+        detail[i].append(string)
     else:
         detail[i].append('')
 
+'''
 '''
 # dump as .psql file
 print "UPDATE jobs SET",
@@ -111,12 +112,11 @@ for i in range(1,len(detail)):
     if i < len(detail)-1:
         print ",",
 print "WHERE joburl='" + URL + "';"
-'''
 
+'''
 # columns output
 for i in range(1,len(detail)):
     for j in [1,3]:
         print detail[i][j],
     print
-'''
 '''
