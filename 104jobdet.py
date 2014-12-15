@@ -4,23 +4,23 @@ import sys
 import urllib2
 import re
 
-def getDataFromURL( url ):
-    try:
-        response = urllib2.urlopen(urllib2.Request(url))
-    except (ValueError, urllib2.URLError) as e:
-        print e
-        sys.exit(0)
-    data = response.read() 
-    # remove '\r' character
-    data = data.replace('\r', '')
-    return data
-
-def getTxtFromFile( filename ):
-    f = open( filename, 'r' )
-    data = f.read()
-    # remove '\r' character
-    data = data.replace('\r', '')
-    return data
+def getData( source, mode ):
+    if mode == "fromurl":
+        try:
+            response = urllib2.urlopen(urllib2.Request(source))
+        except (ValueError, urllib2.URLError) as e:
+            print e
+            sys.exit(0)
+        data = response.read() 
+        # remove '\r' character
+        data = data.replace('\r', '')
+        return data
+    else:
+        f = open( source, 'r' )
+        data = f.read()
+        # remove '\r' character
+        data = data.replace('\r', '')
+        return data
 
 def parse104(website):
     # match the strings
@@ -36,6 +36,42 @@ def parse104(website):
         data.append( re.sub("<[^>]*>|[ \t]+|#(?<=#).*","",str(x)) )
     return data
 
+def output_result(detail, mode=""):
+    # generate UPDATE SQL command
+    if mode == "psql":
+        print "UPDATE jobs SET",
+        for i in range(1,len(detail)):
+            print detail[i][0] + "='" + detail[i][3] + "'",
+            if i < len(detail)-1:
+                print ",",
+        print "WHERE joburl='" + URL + "';"
+    # generate INSERT SQL command
+    elif mode == "sql_insert":
+        print "INSERT INTO jobs (",
+        for i in range(1,len(detail)):
+            print detail[i][0],
+            if i < len(detail)-1:
+                print ",",
+        print ") VALUES(",
+        for i in range(1,len(detail)):
+            print "'" + detail[i][3] + "'",
+            if i < len(detail)-1:
+                print ",",
+        print ");"
+    # generate Rails Console INSERT command
+    elif mode == "rails":
+        print "Job.create!(",
+        for i in range(1,len(detail)):
+            print detail[i][0] + ": '" + detail[i][3] + "'",
+            if i < len(detail)-1:
+                print ",",
+        print ")"
+    # columns output
+    else:
+        for i in range(1,len(detail)):
+            for j in [1,3]:
+                print detail[i][j],
+            print
 
 
 if len(sys.argv)!=2:
@@ -45,16 +81,16 @@ if len(sys.argv)!=2:
 
 #arg as a file
 #infile = sys.argv[1]
-#htmlfile = getTxtFromFile(infile)
+#htmlfile = getData(infile, "fromfile")
 
 #arg as an url
 URL = sys.argv[1]
-htmlfile = getDataFromURL(URL)
+htmlfile = getData(URL, "fromurl")
 data = parse104(htmlfile)
 
 # "detail" is a list of [engtitle, zhtitle, repattern, matchedstr]
 detail = [ [ "update", "更新:" , "(?<=更新日期：)[\d-]+" ],
-        [ "jobname", "志工服務:", "(?<=comp_name\">\s\s\s<h1>)[^<\t]+" ],
+        [ "title", "志工服務:", "(?<=comp_name\">\s\s\s<h1>)[^<\t]+" ],
         [ "content", "工作內容:", "(?<=工作內容\n).*" ],
         [ "treatment", "工作待遇:", "(?<=工作待遇：\n).*" ],
         [ "jobtype", "工作性質:", "(?<=工作性質：\n).*" ],
@@ -103,20 +139,5 @@ for i in range(len(detail)):
     else:
         detail[i].append('')
 
-'''
-'''
-# dump as .psql file
-print "UPDATE jobs SET",
-for i in range(1,len(detail)):
-    print detail[i][0] + "='" + detail[i][3] + "'",
-    if i < len(detail)-1:
-        print ",",
-print "WHERE joburl='" + URL + "';"
 
-'''
-# columns output
-for i in range(1,len(detail)):
-    for j in [1,3]:
-        print detail[i][j],
-    print
-'''
+output_result(detail, "rails")

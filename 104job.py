@@ -8,22 +8,22 @@ import urllib2
 import re
 
 # get data from url
-def getDataFromURL( url ):
-	try:
-		response = urllib2.urlopen(urllib2.Request(url))
-	except (ValueError, urllib2.URLError) as e:
-		print e
-		sys.exit(0)
-	temp = response.read() 
-	return temp
+def getData( source, mode ):
+    if mode == "fromurl":
+        try:
+            response = urllib2.urlopen(urllib2.Request(source))
+        except (ValueError, urllib2.URLError) as e:
+            print e
+            sys.exit(0)
+        temp = response.read() 
+        return temp
+    else:
+        f = open(source, 'r')
+        data = f.read()
+        return data
 
-def getTxtFromFile( filename ):
-	f = open(filename, 'r')
-	data = f.read()
-	return data
 
 
-baseURL = "http://www.104.com.tw"
 def parse104(website):
 # find <td align="left">
 	found = re.findall("<td align=\"left\">.*", website)
@@ -48,23 +48,25 @@ def parse104(website):
 
 page = 1
 URL = "http://www.104.com.tw/area/volunteer/volunteer.cfm?page=" + str(page)
-#html = getDataFromURL(URL)
-#html = getTxtFromFile("raw.txt")
+baseURL = "http://www.104.com.tw"
+#html = getData(URL, "fromurl")
+#html = getData("raw.txt", "fromfile")
 
 # 104job.py is executed by $HOME/www/data/parse.php,
 # and parse.php is executed by /usr/bin/crontab,
 # so the current path would be located where crontab is.
 # That's why it's better to use absolute path.
-f = open("/home/fedro/www/database/104job.txt", "w")
+filename = "/Users/SianJhe/programming/RoR/104crawler/104urls.txt"
+f = open(filename, "w")
 for page in range(1, 31):
 	URL = "http://www.104.com.tw/area/volunteer/volunteer.cfm?page=" + str(page)
-	html = getDataFromURL(URL)
+	html = getData(URL, "fromurl")
 	date, data = parse104(html)
 	for x in range(len(date)):
-		f.write(date[x]+"\n")		#post date
+        #f.write(date[x]+"\n")		#post date
 		f.write(data[x*5]+"\n")		#job url
-		f.write(data[x*5+1]+"\n")	#job name
-		f.write(data[x*5+2]+"\n")	#org url
-		f.write(data[x*5+3]+"\n")	#org
-		f.write(data[x*5+4]+"\n")	#location
-print "Done! Joblist => 'www/database/104job.txt'"
+        #f.write(data[x*5+1]+"\n")	#job name
+        #f.write(data[x*5+2]+"\n")	#org url
+        #f.write(data[x*5+3]+"\n")	#org
+        #f.write(data[x*5+4]+"\n")	#location
+print "Done! Joblist => '" + filename + "'"
