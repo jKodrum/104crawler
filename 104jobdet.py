@@ -67,7 +67,7 @@ def parse_angel_104(website):
 def get_jobs_url():
     urls = []
     # There are 10 jobs per page
-    max_page = 4
+    max_page = 31
     for page in range(1, max_page):
         url = "http://www.104.com.tw/area/volunteer/volunteer.cfm?page=" + str(page)
         raw_html = getData(url, "fromurl")
@@ -100,7 +100,7 @@ def parse_individule_104_web( url ):
     # "detail" is a list of [engtitle, zhtitle, repattern, matchedstr]
     # It's initialized with first 3 columns.
     # The last 1 columns will be appended in parse_individule_104_web function
-    detail = [ [ "update", "更新:" , "(?<=更新日期：)[\d-]+" ],
+    detail = [ [ "last_modified", "更新:" , "(?<=更新日期：)[\d-]+" ],
             [ "title", "志工服務:", "(?<=comp_name\">\s\s\s<h1>)[^<\t]+" ],
             [ "joburl", "服務網址:", "" ],
             [ "content", "工作內容:", "(?<=工作內容\n).*" ],
